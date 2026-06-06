@@ -66,7 +66,7 @@ Build in phases — don't pull Phase 2/3 work forward unless asked:
 
 ## Conventions Implied by the Spec
 
-- Default currency is **ZAR**; project targets **POPIA/GDPR** compliance and **WCAG 2.1 AA**.
+- Default currency is **PHP**; project targets **POPIA/GDPR** compliance and **WCAG 2.1 AA**.
 - All primary keys are `UUID` (`gen_random_uuid()`); timestamps are `TIMESTAMPTZ`; soft-deletes use
   `is_active` boolean flags rather than row deletion.
 - Match the schema's enum value casing exactly when defining Prisma enums / TS types
