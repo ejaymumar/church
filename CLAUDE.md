@@ -2,16 +2,31 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Current State
+## Current State — Two Realities, Don't Conflate Them
 
-This is a **greenfield project — no application code exists yet.** The repository currently
-contains only product requirements documents under [docs/](docs/). The canonical, authoritative
-spec is **[docs/PRD_v1.4.md](docs/PRD_v1.4.md)** (highest version wins; v1.1–v1.3 are superseded
-history). Read it before implementing any feature — it defines the full database schema, roles,
-feature phasing, and architecture.
+1. **What's in the repo today:** a **Figma Make design export** — a Vite + React 18 + TypeScript
+   **front-end prototype only**. Every page renders **hardcoded mock data** (see the `const`
+   arrays at the top of [src/app/components/AdminDashboard.tsx](src/app/components/AdminDashboard.tsx)).
+   There is **no backend, no database, no API, no auth, no data fetching** — it exists to
+   demonstrate the UI/UX, not to run as the real product.
 
-When scaffolding the project, follow the tech stack and conventions below rather than inventing
-new ones, since downstream features in the PRD assume them.
+2. **What the project is meant to become:** the system described in
+   **[docs/PRD.md](docs/PRD.md)** — the single, canonical, authoritative spec. It defines a
+   Next.js + Prisma + PostgreSQL full-stack app with a different architecture from the prototype.
+   Read it before implementing any real feature; it defines the database schema, roles, feature
+   phasing, and infrastructure. The PRD is a **living document versioned via Git history** — there
+   are no longer version-numbered copies (`PRD_v1.x.md`); edit `PRD.md` in place and let commits
+   track the revisions.
+
+**Branching strategy:** the React + Vite prototype is a **POC for a presentation** and lives on the
+**main line**. The real product is built by **migrating to the PRD's Next.js stack on a separate
+branch** — not by extending this Figma export. So:
+
+- Work on the **main line** = iterate on the prototype (styling, layout, mock interactions) in the
+  Vite/React SPA documented below.
+- Work on the **Next.js migration branch** = build the real app per the PRD.
+- **Don't silently mix the two** (e.g. don't add Prisma to the prototype, and don't assume the
+  prototype's `useState` navigation carries over to the real app).
 
 ## Project: Church Website & Member Management System
 
@@ -19,7 +34,56 @@ A self-hosted church website plus an integrated member-management database. Two 
 a **public site** (homepage, services, sermons, giving, prayer, visitor form) and an
 **admin dashboard / member portal** (member CRUD, giving entry, attendance, visitor inbox).
 
-## Planned Tech Stack (per PRD §6.2)
+## Working in the Current Prototype (Vite + React SPA)
+
+**Commands** (npm; a `package-lock.json` is present and gitignored):
+- `npm i` — install dependencies
+- `npm run dev` — start the Vite dev server
+- `npm run build` — production build via `vite build`
+
+There is **no lint, test, or typecheck script** and no test framework wired up — don't assume
+`npm test` exists.
+
+**Entry & navigation:**
+- [src/main.tsx](src/main.tsx) mounts [src/app/App.tsx](src/app/App.tsx) into `#root`
+  (see [index.html](index.html)).
+- Routing is **client-side page switching via a single `useState<Page>` in `App.tsx`** — a
+  `switch` renders one page component at a time. **`react-router` is a dependency but is NOT
+  used** for app navigation; don't reach for it when adding a "page." Add a new page by extending
+  the `Page` union + the switch in `App.tsx` and a nav link in
+  [src/app/components/Navbar.tsx](src/app/components/Navbar.tsx).
+- The `Navbar` is hidden when `page === "admin"` so the admin dashboard renders full-screen.
+
+**Structure:**
+- One component per public page in [src/app/components/](src/app/components/)
+  (`HomePage`, `AboutPage`, `ServicesPage`, `EventsPage`, `SermonsPage`, `GivingPage`,
+  `PrayerPage`, `ContactPage`, `VisitorFormPage`) plus `AdminDashboard`.
+- [src/app/components/ui/](src/app/components/ui/) is the **shadcn/ui** primitive set (Radix-based).
+  Compose class names with the `cn()` helper from
+  [src/app/components/ui/utils.ts](src/app/components/ui/utils.ts) (`clsx` + `tailwind-merge`).
+- [src/app/components/figma/ImageWithFallback.tsx](src/app/components/figma/ImageWithFallback.tsx)
+  is Figma-generated — leave it for Figma asset handling.
+
+**Styling (Tailwind CSS v4):**
+- Tailwind runs through the **`@tailwindcss/vite`** plugin — there is **no `tailwind.config.js`**
+  and `postcss.config.mjs` is intentionally empty (the plugin sets up PostCSS itself).
+- CSS entry is [src/styles/index.css](src/styles/index.css), which imports `fonts.css`,
+  `tailwind.css`, and `theme.css`. **Design tokens live in
+  [src/styles/theme.css](src/styles/theme.css)** as CSS variables exposed to Tailwind via
+  `@theme inline` — change colors/radii/fonts there, not via a config file. Brand palette:
+  `--primary` deep navy `#1e3a5f`, `--accent` gold `#c9933a`. Fonts: **Crimson Pro** (`--font-display`)
+  / **DM Sans** (`--font-body`). A `.dark` variant is defined but no theme toggle is wired up.
+
+**Vite quirks (from [vite.config.ts](vite.config.ts)):**
+- `@` is aliased to `src/`.
+- A custom `figma-asset-resolver` maps `figma:asset/...` imports to `src/assets/`.
+- Per the file's own comments: **do not remove the `react()` or `tailwindcss()` plugins**, and
+  **never add `.css`, `.ts`, or `.tsx` to `assetsInclude`**.
+
+[guidelines/Guidelines.md](guidelines/Guidelines.md) is an unfilled Figma template (all commented
+out) — no active rules there yet.
+
+## Target Tech Stack (per PRD §6.2 — for the real build, NOT the current prototype)
 
 - **Next.js 14 (App Router)** — frontend + API routes (no separate backend service)
 - **Tailwind CSS + shadcn/ui** — styling and components
@@ -27,12 +91,12 @@ a **public site** (homepage, services, sermons, giving, prayer, visitor form) an
 - **NextAuth.js / Auth.js v5** — role-based auth with bcrypt password hashing
 - **MinIO** (S3-compatible) — sermon media and profile photo storage
 - **n8n** (self-hosted) — visitor-form webhook automation
-- **Postal** — transactional email; **PayStack or Stripe** — online giving
+- **Postal** — transactional email; **PayMongo or Stripe** — online giving
 - Deployed via **Docker Compose** on a local Ubuntu server, exposed through a **Cloudflare Tunnel**
   behind an **Nginx** reverse proxy
 
-There is no choice yet between PayStack and Stripe (open question in PRD §9.1) — confirm before
-implementing the giving gateway.
+There is no choice yet between **PayMongo** (Philippine-local; GCash, Maya, GrabPay, cards) and
+**Stripe** (open question in PRD §9.1) — confirm before implementing the giving gateway.
 
 ## Architecture Notes That Aren't Obvious From a Single File
 
@@ -66,7 +130,9 @@ Build in phases — don't pull Phase 2/3 work forward unless asked:
 
 ## Conventions Implied by the Spec
 
-- Default currency is **PHP**; project targets **POPIA/GDPR** compliance and **WCAG 2.1 AA**.
+- The church is in the **Philippines**: default currency **PHP (₱)**, timezone **Asia/Manila (UTC+8)**,
+  `+63` phone formats. Compliance targets are the **Data Privacy Act of 2012 (RA 10173)** (overseen by
+  the **NPC**) and **WCAG 2.1 AA** — not POPIA/GDPR.
 - All primary keys are `UUID` (`gen_random_uuid()`); timestamps are `TIMESTAMPTZ`; soft-deletes use
   `is_active` boolean flags rather than row deletion.
 - Match the schema's enum value casing exactly when defining Prisma enums / TS types

@@ -39,9 +39,9 @@ export function ContactPage() {
             <div className="flex items-start gap-3">
               <MapPin className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
               <div className="text-sm text-muted-foreground leading-relaxed">
-                12 Faith Avenue<br />
-                Quezon City, Metro Manila<br />
-                Philippines 1108
+                National Highway, Poblacion Ward II<br />
+                Minglanilla, Cebu<br />
+                Philippines 6046
               </div>
             </div>
           </div>
@@ -49,7 +49,7 @@ export function ContactPage() {
             <div className="text-accent text-xs uppercase tracking-widest mb-1">Contact Details</div>
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <Phone className="w-4 h-4 text-accent flex-shrink-0" />
-              +63 2 8234 5678
+              +63 32 273 4567
             </div>
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <Mail className="w-4 h-4 text-accent flex-shrink-0" />
@@ -144,13 +144,16 @@ export function ContactPage() {
         </div>
       </section>
 
-      {/* Map placeholder */}
-      <div className="h-64 bg-muted border-t border-border flex items-center justify-center">
-        <div className="text-center text-muted-foreground text-sm">
-          <MapPin className="w-6 h-6 mx-auto mb-2" />
-          <div>14 Katipunan Avenue, Quezon City, Metro Manila</div>
-          <div className="text-xs mt-1">Google Maps embed would appear here</div>
-        </div>
+      {/* Map — Minglanilla, Cebu */}
+      <div className="h-64 border-t border-border">
+        <iframe
+          title="Evangelical Community Church — Minglanilla, Cebu"
+          src="https://www.google.com/maps?q=Minglanilla,Cebu,Philippines&output=embed"
+          className="w-full h-full border-0"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          allowFullScreen
+        />
       </div>
     </div>
   );

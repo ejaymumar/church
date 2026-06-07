@@ -1,4 +1,8 @@
-import { Heart, Target, Eye } from "lucide-react";
+import {
+  Heart, Target, Eye, Users, Award, ShieldCheck, Sprout,
+  Sunrise, Church, GraduationCap, HandCoins, Megaphone,
+  Briefcase, Music, BookOpen, Hand, HeartHandshake, Clock,
+} from "lucide-react";
 
 const leadership = [
   {
@@ -28,12 +32,33 @@ const leadership = [
 ];
 
 const coreValues = [
-  { label: "Word-centred", desc: "Everything we do is anchored in the truth of Scripture." },
-  { label: "Spirit-filled", desc: "We believe in the active work of the Holy Spirit in the life of every believer." },
-  { label: "Community-focused", desc: "We are a family — we do life together and bear one another's burdens." },
-  { label: "Outreach-driven", desc: "We are called to serve our city and the nations with the love of Christ." },
-  { label: "Discipleship", desc: "We are committed to helping every member grow into the fullness of Christ." },
-  { label: "Excellence", desc: "We honour God by bringing our best to everything we do." },
+  { label: "Teamwork", desc: "We are a family — we do life together and bear one another's burdens.", icon: Users },
+  { label: "Excellence", desc: "We honour God by bringing our best to everything we do.", icon: Award },
+  { label: "Accountability", desc: "We are accountable to one another and to God.", icon: ShieldCheck },
+  { label: "Multiplication", desc: "We are committed to reproducing the work of Christ in our community and beyond.", icon: Sprout },
+];
+
+const growthPath = [
+  { title: "Appointment with God", cadence: "Daily", icon: Sunrise },
+  { title: "Celebration with God's People", cadence: "Weekly", icon: Church },
+  { title: "Discipleship Group", cadence: "Weekly", icon: GraduationCap },
+  { title: "Contribution to Ministry", cadence: "Payday", icon: HandCoins },
+  { title: "Gospel Sharing", cadence: "Every Opportunity", icon: Megaphone },
+];
+
+const pillarMinistries = [
+  { name: "Admin & Finance", icon: Briefcase },
+  { name: "Worship", icon: Music },
+  { name: "Discipleship", icon: BookOpen },
+  { name: "Prayer", icon: Hand },
+  { name: "Outreach", icon: HeartHandshake },
+];
+
+const discipleshipGroups = [
+  { name: "DOTA", schedule: "Sun · 1:00 PM", leader: "Bro. Christian Inso" },
+  { name: "CAREer", schedule: "Sun · 1:00 PM", leader: "Bro. Jordan Fajardo" },
+  { name: "Elevate", schedule: "Sun · 1:00 PM", leader: "Bro. Jordan Fajardo" },
+  { name: "Charity", schedule: "Sun · 1:30 PM", leader: "Sis. Beth Sevillano" },
 ];
 
 export function AboutPage() {
@@ -55,7 +80,7 @@ export function AboutPage() {
             Who We Are
           </h1>
           <p className="text-white/70 text-lg max-w-2xl mx-auto leading-relaxed">
-            Founded in 1998 in the heart of Quezon City, Evangelical Community Church has grown from a small prayer group of 12 into a thriving congregation of over 300 members.
+            Founded in 1998 in the heart of Minglanilla, Cebu, Evangelical Community Church has grown from a small prayer group of 12 into a thriving congregation of over 300 members.
           </p>
         </div>
       </section>
@@ -69,7 +94,7 @@ export function AboutPage() {
             </div>
             <div className="text-accent text-xs uppercase tracking-widest mb-3">Mission</div>
             <p style={{ fontFamily: "var(--font-display)", fontSize: "1.1rem", lineHeight: 1.6 }}>
-              To make disciples of all nations — transforming lives through the Word of God, authentic community, and Spirit-led worship.
+              To make disciples who Live the Word, Give towards the Work and Influence the World for Christ.
             </p>
           </div>
           <div className="bg-accent text-white rounded-lg p-8">
@@ -78,7 +103,7 @@ export function AboutPage() {
             </div>
             <div className="text-white/70 text-xs uppercase tracking-widest mb-3">Vision</div>
             <p style={{ fontFamily: "var(--font-display)", fontSize: "1.1rem", lineHeight: 1.6 }}>
-              A church that is a light in Metro Manila — where every person is known, loved, and equipped to live out their God-given purpose.
+              Towards a reproducing church that models intentional disciple-making.
             </p>
           </div>
           <div className="bg-secondary rounded-lg p-8 border border-border">
@@ -101,14 +126,105 @@ export function AboutPage() {
             What We Believe & How We Live
           </h2>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {coreValues.map((v, i) => (
-            <div key={i} className="bg-card border border-border rounded-lg p-5 hover:border-accent/30 transition-colors">
-              <div className="text-accent text-xs uppercase tracking-wider mb-1 font-medium">0{i + 1}</div>
-              <h3 style={{ fontFamily: "var(--font-display)", fontSize: "1.1rem", fontWeight: 600 }} className="mb-2">
-                {v.label}
-              </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{v.desc}</p>
+        <div className="max-w-3xl space-y-4">
+          {coreValues.map((v, i) => {
+            const Icon = v.icon;
+            return (
+              <div key={i} className="flex items-start gap-5 bg-card border border-border rounded-lg p-5 hover:border-accent/30 transition-colors">
+                <div className="w-11 h-11 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <Icon className="w-5 h-5 text-accent" />
+                </div>
+                <div>
+                  <h3 style={{ fontFamily: "var(--font-display)", fontSize: "1.15rem", fontWeight: 600 }} className="mb-1">
+                    <span className="text-accent" style={{ fontSize: "1.5rem", fontWeight: 700 }}>{v.label.charAt(0)}</span>{v.label.slice(1)}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{v.desc}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Growth Path */}
+      <section className="bg-secondary py-20">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-accent text-xs uppercase tracking-widest mb-2 flex items-center gap-2">
+            <div className="w-6 h-px bg-accent" /> Growth Path
+          </div>
+          <h2 style={{ fontFamily: "var(--font-display)", fontSize: "2rem", fontWeight: 600 }} className="mb-8">
+            Our Rhythm of Discipleship
+          </h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {growthPath.map((g, i) => {
+              const Icon = g.icon;
+              return (
+                <div key={i} className="bg-card border border-border rounded-lg p-5 text-center hover:border-accent/30 transition-colors">
+                  <div className="w-11 h-11 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
+                    <Icon className="w-5 h-5 text-accent" />
+                  </div>
+                  <h3 style={{ fontFamily: "var(--font-display)", fontSize: "1rem", fontWeight: 600 }} className="mb-3 leading-snug">
+                    {g.title}
+                  </h3>
+                  <span className="inline-block text-xs uppercase tracking-wider text-accent bg-accent/10 rounded-full px-3 py-1">
+                    {g.cadence}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Pillar Ministries */}
+      <section className="max-w-7xl mx-auto px-6 py-20">
+        <div className="text-accent text-xs uppercase tracking-widest mb-2 flex items-center gap-2">
+          <div className="w-6 h-px bg-accent" /> Pillar Ministries
+        </div>
+        <h2 style={{ fontFamily: "var(--font-display)", fontSize: "2rem", fontWeight: 600 }} className="mb-8">
+          Five Pillars That Hold Us Up
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          {pillarMinistries.map((p, i) => {
+            const Icon = p.icon;
+            return (
+              <div key={i} className="bg-primary text-white rounded-lg p-6 flex flex-col items-center text-center gap-3 hover:bg-primary/90 transition-colors">
+                <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
+                  <Icon className="w-6 h-6 text-accent" />
+                </div>
+                <div style={{ fontFamily: "var(--font-display)", fontSize: "1rem", fontWeight: 600 }}>
+                  {p.name}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Discipleship Groups */}
+      <section className="max-w-4xl mx-auto px-6 pb-20">
+        <div className="text-accent text-xs uppercase tracking-widest mb-2 flex items-center gap-2">
+          <div className="w-6 h-px bg-accent" /> Discipleship Groups
+        </div>
+        <h2 style={{ fontFamily: "var(--font-display)", fontSize: "2rem", fontWeight: 600 }} className="mb-8">
+          Find Your Group
+        </h2>
+        <div className="divide-y divide-border border border-border rounded-lg overflow-hidden">
+          {discipleshipGroups.map((d, i) => (
+            <div key={i} className="flex items-center gap-4 px-5 py-4 bg-card hover:bg-secondary/30 transition-colors">
+              <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                <Users className="w-4 h-4 text-accent" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div style={{ fontFamily: "var(--font-display)", fontSize: "1.05rem", fontWeight: 600 }}>
+                  {d.name}
+                </div>
+                <div className="text-xs text-muted-foreground mt-0.5">Led by {d.leader}</div>
+              </div>
+              <div className="flex items-center gap-1.5 text-sm text-accent flex-shrink-0">
+                <Clock className="w-3.5 h-3.5" />
+                {d.schedule}
+              </div>
             </div>
           ))}
         </div>
@@ -125,12 +241,12 @@ export function AboutPage() {
           </h2>
           <div className="space-y-6">
             {[
-              { year: "1998", event: "Founded by 12 founding members in a home in Quezon City." },
-              { year: "2003", event: "Moved into our first dedicated building in Cubao, Quezon City." },
+              { year: "1998", event: "Founded by 12 founding members in a home in Minglanilla, Cebu." },
+              { year: "2003", event: "Moved into our first dedicated building in Poblacion, Minglanilla." },
               { year: "2008", event: "Pastor Daniel Santos appointed as Senior Pastor." },
               { year: "2012", event: "Launch of the Youth Ministry under Pastor Sarah Garcia." },
-              { year: "2018", event: "Building fund drive for the current Main Sanctuary on Katipunan Avenue." },
-              { year: "2022", event: "Opened the Outreach Centre and Community Kitchen in Payatas." },
+              { year: "2018", event: "Building fund drive for the current Main Sanctuary on the National Highway, Minglanilla." },
+              { year: "2022", event: "Opened the Outreach Centre and Community Kitchen in Inayagan, Minglanilla." },
               { year: "2026", event: "Digital transformation — launching our new church website and member portal." },
             ].map((item, i) => (
               <div key={i} className="flex gap-5">

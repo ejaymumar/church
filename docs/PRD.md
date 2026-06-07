@@ -4,10 +4,16 @@
 | | |
 |---|---|
 | **Project** | Church Website & Member Database |
-| **Version** | 1.2 — Revised Draft |
+| **Church** | Evangelical Community Church (ECC) |
+| **Version** | 1.5 — Localised for the Philippines |
 | **Date** | June 2026 |
+| **Location** | Minglanilla, Cebu, Philippines (timezone Asia/Manila, UTC+8) |
 | **Tech Stack** | Custom-coded — React / Next.js (Self-Hosted) |
 | **Status** | Draft — Pending Review |
+
+> **Versioning:** This is the single, living PRD for the project. From this revision onward,
+> changes are tracked via Git history (commits and tags) rather than by creating new
+> version-numbered files. Update this document in place.
 
 ---
 
@@ -32,6 +38,8 @@
 
 This document outlines the product requirements for the design and development of a full-featured church website combined with an integrated member management database. The solution will serve as the primary digital presence for the church community, enabling members and visitors to access church information, engage with content, and manage their connection to the church.
 
+The church is **Evangelical Community Church (ECC)**, located in **Minglanilla, Cebu, Philippines**. Accordingly, the system uses the **Philippine Peso (PHP, ₱)** as its default currency, displays dates and times in the **Asia/Manila timezone (UTC+8)**, assumes Philippine mobile/landline number formats (e.g. `+63 9XX XXX XXXX` mobile, `+63 32 XXX XXXX` Cebu landline), and is built to comply with the **Data Privacy Act of 2012 (Republic Act No. 10173)** and its Implementing Rules and Regulations, as overseen by the **National Privacy Commission (NPC)**.
+
 ### 1.2 Purpose
 
 The church website aims to:
@@ -49,6 +57,7 @@ This PRD covers the following deliverables:
 - Public-facing church website (Next.js frontend)
 - Admin dashboard for content and member management
 - Member database with role-based access
+- Visitor registration form with n8n webhook integration
 - Integrations for online giving, media, and notifications
 
 ### 1.4 Stakeholders
@@ -58,6 +67,7 @@ This PRD covers the following deliverables:
 | Super Admin | IT/Website Administrator | Full system access, user management, configuration |
 | Pastor/Church Leader | Primary Decision Maker | Approve content, access member records, announcements |
 | Church Members | Primary End Users | Access website, manage own profile, give online |
+| First Impression Ministry | Visitor Reception | Capture visitor details via QR-linked form at services |
 | Visitors/Public | Secondary Audience | Browse public site, explore church information |
 
 ---
@@ -70,6 +80,7 @@ This PRD covers the following deliverables:
 - Increase community engagement through online giving, media, and event participation
 - Streamline member record management and reduce manual administrative workload
 - Provide leadership with real-time visibility into membership and attendance
+- Capture and follow up on first-time visitor information systematically
 
 ### 2.2 Success Metrics
 
@@ -80,6 +91,7 @@ This PRD covers the following deliverables:
 | Member records digitised | 0% | 100% |
 | Prayer requests submitted | — | 20+ per month |
 | Sermon media plays | — | 200+ per month |
+| Visitor forms submitted per month | — | 10+ submissions |
 
 ---
 
@@ -135,7 +147,7 @@ The homepage serves as the primary entry point and must create a strong first im
 
 - Secure giving form with options: tithe, offering, building fund, missions
 - One-time and recurring donation setup
-- Payment gateway integration (Stripe or PayStack recommended)
+- Payment gateway integration (PayMongo or Stripe recommended — see §9.1)
 - Email receipt generation upon successful transaction
 - Member giving history accessible from personal profile
 
@@ -148,10 +160,40 @@ The homepage serves as the primary entry point and must create a strong first im
 
 #### 3.1.9 Contact & Location Page
 
-- Church address with embedded Google Maps
+- Church address (Minglanilla, Cebu) with embedded Google Maps centred on the church location
 - General enquiry contact form
 - Department contact directory (admin, pastoral, media, etc.)
 - Social media links (Facebook, Instagram, YouTube)
+
+#### 3.1.10 Visitor Registration Form
+
+The visitor registration form is a lightweight, mobile-optimised page accessible via a QR code or direct URL. It is intended for use by the First Impression Ministry during or after services to digitally capture guest details on the spot.
+
+**Access & Flow:**
+- A unique QR code and short URL (e.g. `church.org/welcome`) are printed/displayed at the welcome desk
+- First Impression Ministry members can hand a phone/tablet to the visitor or show them the QR code to self-complete
+- On submission, form data is posted to an **n8n webhook** for processing (e.g. pastor notification, follow-up email, or CRM logging)
+- Visitor sees a simple thank-you confirmation screen after submitting
+
+**Form Fields:**
+
+| Field | Type | Required |
+|---|---|---|
+| Full Name | Text | Yes |
+| Date of Birth | Date | No |
+| Phone Number | Tel | Yes |
+| Email Address | Email | No |
+| Home Area / Suburb | Text | No |
+| How did you hear about us? | Select (Social Media, Friend/Family, Driving Past, Other) | No |
+| First time or returning visitor? | Radio (First Time / Returning) | Yes |
+| Would you like to be contacted? | Checkbox (Yes / No) | No |
+
+**Technical Notes:**
+- The form submits a JSON payload to the configured n8n webhook URL via HTTP POST
+- No authentication required — form is publicly accessible via its URL
+- Data submitted through this form is stored in the `visitors` table in PostgreSQL
+- n8n handles downstream automation (notifications, follow-up emails, etc.)
+- The webhook URL is stored as an environment variable and configurable without code changes
 
 ---
 
@@ -159,7 +201,7 @@ The homepage serves as the primary entry point and must create a strong first im
 
 ### 4.1 Database Schema
 
-The database is built on **PostgreSQL 16**. The core schema consists of two primary tables — `members` and `ministries` — linked through a join table to support many-to-many ministry membership. Additional supporting tables cover users, attendance, giving, and prayer requests.
+The database is built on **PostgreSQL 16**. The schema covers members, ministries, services, activities, visitors, users, giving, attendance, and prayer requests. Tables are linked via foreign keys where appropriate.
 
 ---
 
@@ -180,6 +222,7 @@ Stores all personal, contact, and membership information for each church member.
 | `baptism_status` | `ENUM('Yes','No','Pending')` | `DEFAULT 'No'` | Whether the member has been baptised |
 | `membership_status` | `ENUM('Active','Inactive','Visitor')` | `NOT NULL, DEFAULT 'Visitor'` | Current membership standing |
 | `membership_date` | `DATE` | `NULLABLE` | Date formal membership was granted |
+| `renewal_date` | `DATE` | `NULLABLE` | Date membership is due for renewal |
 | `profile_photo_url` | `TEXT` | `NULLABLE` | Path to profile photo stored in MinIO |
 | `notes` | `TEXT` | `NULLABLE` | Admin-only notes about the member |
 | `created_at` | `TIMESTAMPTZ` | `DEFAULT NOW()` | Record creation timestamp |
@@ -189,6 +232,7 @@ Stores all personal, contact, and membership information for each church member.
 - `idx_members_email` on `email_address`
 - `idx_members_status` on `membership_status`
 - `idx_members_last_name` on `last_name`
+- `idx_members_renewal_date` on `renewal_date`
 
 ---
 
@@ -225,11 +269,107 @@ Resolves the many-to-many relationship between members and ministries, and captu
 | `ministry_id` | `UUID` | `NOT NULL, FK → ministries(id) ON DELETE CASCADE` | Reference to the ministry |
 | `role` | `VARCHAR(100)` | `NULLABLE` | Member's role in this ministry (e.g. Leader, Volunteer) |
 | `joined_date` | `DATE` | `NULLABLE` | Date the member joined this ministry |
+| `renewal_date` | `DATE` | `NULLABLE` | Date the member's ministry involvement is due for renewal |
 | `is_active` | `BOOLEAN` | `DEFAULT TRUE` | Whether the member is currently active in this ministry |
 | `created_at` | `TIMESTAMPTZ` | `DEFAULT NOW()` | Record creation timestamp |
 
 **Constraints:**
 - `UNIQUE(member_id, ministry_id)` — prevents duplicate ministry assignments
+
+---
+
+#### Table: `services`
+
+Stores recurring church service templates used to power the public service schedule and calendar. Each row represents a service pattern (e.g. Sunday Main Service), not a single occurrence. Individual dated occurrences are generated at the application layer from this template. Each service record captures the full programme — preacher, verse, topic, worship roles, and whether it belongs to a series.
+
+| Column | Data Type | Constraints | Description |
+|---|---|---|---|
+| `id` | `UUID` | `PRIMARY KEY, DEFAULT gen_random_uuid()` | Unique service template identifier |
+| `title` | `VARCHAR(200)` | `NOT NULL` | Service title (e.g. Sunday Main Service, Good Friday) |
+| `description` | `TEXT` | `NULLABLE` | Brief description or overview of the service |
+| `verse` | `VARCHAR(200)` | `NULLABLE` | Key scripture verse for the service (e.g. John 3:16) |
+| `topic` | `VARCHAR(200)` | `NULLABLE` | Sermon or service topic / theme |
+| `is_series` | `BOOLEAN` | `DEFAULT FALSE` | Whether this service belongs to a sermon series |
+| `series_name` | `VARCHAR(200)` | `NULLABLE` | Name of the sermon series (if `is_series = TRUE`) |
+| `service_type` | `ENUM('Recurring','Special')` | `NOT NULL, DEFAULT 'Recurring'` | Whether this is a regular or one-off service |
+| `recurrence_pattern` | `VARCHAR(100)` | `NULLABLE` | Recurrence rule (e.g. `WEEKLY:SUNDAY`, `MONTHLY:FIRST_SUNDAY`) |
+| `day_of_week` | `ENUM('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday')` | `NULLABLE` | Day the recurring service falls on |
+| `start_time` | `TIME` | `NOT NULL` | Service start time |
+| `end_time` | `TIME` | `NULLABLE` | Approximate service end time |
+| `location` | `VARCHAR(255)` | `NULLABLE` | Venue or room name |
+| `speaker_id` | `UUID` | `FK → members(id), NULLABLE` | Member delivering the sermon / message |
+| `worship_leader_id` | `UUID` | `FK → members(id), NULLABLE` | Member leading worship |
+| `song_leader_id` | `UUID` | `FK → members(id), NULLABLE` | Member leading congregational singing |
+| `closing_prayer_id` | `UUID` | `FK → members(id), NULLABLE` | Member assigned to deliver the closing prayer |
+| `special_date` | `DATE` | `NULLABLE` | Specific date for non-recurring (special) services |
+| `is_active` | `BOOLEAN` | `DEFAULT TRUE` | Whether this service template is currently active / displayed |
+| `created_at` | `TIMESTAMPTZ` | `DEFAULT NOW()` | Record creation timestamp |
+| `updated_at` | `TIMESTAMPTZ` | `DEFAULT NOW()` | Last updated timestamp |
+
+**Indexes:**
+- `idx_services_type` on `service_type`
+- `idx_services_day` on `day_of_week`
+- `idx_services_speaker` on `speaker_id`
+- `idx_services_worship_leader` on `worship_leader_id`
+
+> **Note:** The calendar feature (Phase 3) will read from this table to render the public service schedule. Special one-off services use `service_type = 'Special'` and populate `special_date` instead of `recurrence_pattern`.
+
+---
+
+#### Table: `activities`
+
+Stores church activities and events such as camps, youth programmes, outreach drives, and special celebrations. Unlike `services`, activities have a defined start and end date/time and are discrete, non-recurring occurrences.
+
+| Column | Data Type | Constraints | Description |
+|---|---|---|---|
+| `id` | `UUID` | `PRIMARY KEY, DEFAULT gen_random_uuid()` | Unique activity identifier |
+| `title` | `VARCHAR(200)` | `NOT NULL` | Activity title (e.g. Youth Camp, Women's Conference) |
+| `leader_id` | `UUID` | `FK → members(id), NULLABLE` | Member responsible for leading / organising the activity |
+| `program` | `TEXT` | `NULLABLE` | Programme outline or run-of-show description |
+| `theme` | `VARCHAR(200)` | `NULLABLE` | Theme of the activity (e.g. "Walking in Faith") |
+| `verse` | `VARCHAR(200)` | `NULLABLE` | Key scripture verse associated with the activity |
+| `start_datetime` | `TIMESTAMPTZ` | `NOT NULL` | Activity start date and time |
+| `end_datetime` | `TIMESTAMPTZ` | `NOT NULL` | Activity end date and time |
+| `location` | `VARCHAR(255)` | `NULLABLE` | Venue or location of the activity |
+| `notes` | `TEXT` | `NULLABLE` | Additional admin notes or logistics |
+| `is_active` | `BOOLEAN` | `DEFAULT TRUE` | Whether the activity is published / visible |
+| `created_at` | `TIMESTAMPTZ` | `DEFAULT NOW()` | Record creation timestamp |
+| `updated_at` | `TIMESTAMPTZ` | `DEFAULT NOW()` | Last updated timestamp |
+
+**Indexes:**
+- `idx_activities_leader` on `leader_id`
+- `idx_activities_start` on `start_datetime`
+- `idx_activities_end` on `end_datetime`
+
+> **Note:** The `activities` table feeds the public events calendar in Phase 2 and can be managed from the admin dashboard without code changes.
+
+---
+
+#### Table: `visitors`
+
+Stores data submitted through the visitor registration form. Visitor records are kept separate from `members` — a visitor may be manually promoted to a member record by an admin after follow-up.
+
+| Column | Data Type | Constraints | Description |
+|---|---|---|---|
+| `id` | `UUID` | `PRIMARY KEY, DEFAULT gen_random_uuid()` | Unique visitor identifier |
+| `full_name` | `VARCHAR(200)` | `NOT NULL` | Visitor's full name |
+| `date_of_birth` | `DATE` | `NULLABLE` | Visitor's date of birth |
+| `phone_number` | `VARCHAR(20)` | `NOT NULL` | Contact phone number |
+| `email_address` | `VARCHAR(255)` | `NULLABLE` | Contact email address |
+| `home_area` | `VARCHAR(150)` | `NULLABLE` | Home suburb or area |
+| `heard_via` | `ENUM('Social Media','Friend/Family','Driving Past','Other')` | `NULLABLE` | How the visitor heard about the church |
+| `visit_type` | `ENUM('First Time','Returning')` | `NOT NULL, DEFAULT 'First Time'` | Whether this is a first-time or returning visit |
+| `wants_contact` | `BOOLEAN` | `DEFAULT FALSE` | Whether the visitor opted in to be contacted |
+| `visited_on` | `DATE` | `NOT NULL, DEFAULT CURRENT_DATE` | Date of the visit / form submission |
+| `converted_to_member` | `BOOLEAN` | `DEFAULT FALSE` | Flag set when visitor is promoted to a member record |
+| `member_id` | `UUID` | `FK → members(id), NULLABLE` | Linked member record if visitor was converted |
+| `notes` | `TEXT` | `NULLABLE` | Admin follow-up notes |
+| `created_at` | `TIMESTAMPTZ` | `DEFAULT NOW()` | Submission timestamp |
+
+**Indexes:**
+- `idx_visitors_email` on `email_address`
+- `idx_visitors_visited_on` on `visited_on`
+- `idx_visitors_converted` on `converted_to_member`
 
 ---
 
@@ -259,7 +399,7 @@ Records tithes and offerings entered manually by admins from physical tithe box 
 | `id` | `UUID` | `PRIMARY KEY, DEFAULT gen_random_uuid()` | Unique transaction identifier |
 | `member_id` | `UUID` | `FK → members(id), NULLABLE` | Donor member (nullable for anonymous/unattributed gifts) |
 | `amount` | `NUMERIC(10,2)` | `NOT NULL` | Amount given |
-| `currency` | `VARCHAR(5)` | `NOT NULL, DEFAULT 'ZAR'` | Currency code |
+| `currency` | `VARCHAR(5)` | `NOT NULL, DEFAULT 'PHP'` | Currency code (ISO 4217) |
 | `giving_type` | `ENUM('Tithe','Offering','Building Fund','Missions','Other')` | `NOT NULL` | Category of donation |
 | `payment_method` | `ENUM('Cash','EFT','Card','Cheque')` | `NOT NULL, DEFAULT 'Cash'` | How the donation was received |
 | `service_date` | `DATE` | `NOT NULL` | Date of the service the giving relates to |
@@ -325,6 +465,7 @@ erDiagram
         ENUM baptism_status
         ENUM membership_status
         DATE membership_date
+        DATE renewal_date
         TEXT profile_photo_url
         TEXT notes
         TIMESTAMPTZ created_at
@@ -349,7 +490,65 @@ erDiagram
         UUID ministry_id FK
         VARCHAR role
         DATE joined_date
+        DATE renewal_date
         BOOLEAN is_active
+        TIMESTAMPTZ created_at
+    }
+
+    services {
+        UUID id PK
+        VARCHAR title
+        TEXT description
+        VARCHAR verse
+        VARCHAR topic
+        BOOLEAN is_series
+        VARCHAR series_name
+        ENUM service_type
+        VARCHAR recurrence_pattern
+        ENUM day_of_week
+        TIME start_time
+        TIME end_time
+        VARCHAR location
+        UUID speaker_id FK
+        UUID worship_leader_id FK
+        UUID song_leader_id FK
+        UUID closing_prayer_id FK
+        DATE special_date
+        BOOLEAN is_active
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    activities {
+        UUID id PK
+        VARCHAR title
+        UUID leader_id FK
+        TEXT program
+        VARCHAR theme
+        VARCHAR verse
+        TIMESTAMPTZ start_datetime
+        TIMESTAMPTZ end_datetime
+        VARCHAR location
+        TEXT notes
+        BOOLEAN is_active
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    visitors {
+        UUID id PK
+        VARCHAR full_name
+        DATE date_of_birth
+        VARCHAR phone_number
+        VARCHAR email_address
+        VARCHAR home_area
+        ENUM heard_via
+        ENUM visit_type
+        BOOLEAN wants_contact
+        DATE visited_on
+        BOOLEAN converted_to_member
+        UUID member_id FK
+        TEXT notes
         TIMESTAMPTZ created_at
     }
 
@@ -399,28 +598,77 @@ erDiagram
     }
 
     members ||--o{ member_ministries : "belongs to"
-    ministries ||--o{ member_ministries : "has"
+    ministries ||--o{ member_ministries : "has members"
     members ||--o| ministries : "leads"
     members ||--o| users : "has account"
     members ||--o{ giving_records : "gives"
     members ||--o{ prayer_requests : "submits"
+    members ||--o{ services : "speaks at"
+    members ||--o{ services : "leads worship"
+    members ||--o{ services : "leads song"
+    members ||--o{ services : "closes in prayer"
+    members ||--o{ activities : "leads"
+    visitors ||--o| members : "converted to"
     users ||--o{ giving_records : "recorded_by"
     users ||--o{ attendance_logs : "recorded_by"
 ```
 
 ---
 
-### 4.2 Admin Dashboard Features
+### 4.2 Visitor Form Integration — n8n Webhook Flow
+
+When a visitor submits the registration form, the following happens:
+
+```mermaid
+sequenceDiagram
+    participant V as Visitor
+    participant F as Visitor Form (Next.js)
+    participant DB as PostgreSQL (visitors table)
+    participant W as n8n Webhook
+    participant N as Notifications
+
+    V->>F: Scans QR code / opens link
+    F->>V: Renders mobile-optimised form
+    V->>F: Fills in and submits form
+    F->>DB: INSERT into visitors table
+    F->>W: POST JSON payload to n8n webhook
+    W->>N: Sends pastor/admin notification (email/WhatsApp)
+    W->>N: Triggers follow-up email to visitor (if email provided & wants_contact = true)
+    F->>V: Displays thank-you confirmation screen
+```
+
+**n8n Webhook Payload (JSON):**
+
+```json
+{
+  "full_name": "Maria Santos",
+  "date_of_birth": "1995-04-12",
+  "phone_number": "+63 917 234 5678",
+  "email_address": "maria@example.com",
+  "home_area": "Minglanilla",
+  "heard_via": "Friend/Family",
+  "visit_type": "First Time",
+  "wants_contact": true,
+  "visited_on": "2026-06-06"
+}
+```
+
+---
+
+### 4.3 Admin Dashboard Features
 
 - Member directory with search, filter, and export (CSV/PDF) capabilities
 - Add, edit, and deactivate member records
 - Bulk import via CSV upload for initial data migration (~300 records)
 - Ministry/department management — create groups and assign members
+- Service schedule management — add/edit recurring and special service templates, assign speaker, worship leader, song leader, and closing prayer roles
+- Activities management — add/edit church events and programmes with theme, verse, programme, and leader
+- Visitor records inbox — view, follow up, and convert visitors to members
 - Attendance log — record service headcount and new visitor count per service
 - Giving records page — manual entry of tithe and offering amounts per service date
-- Dashboard summary stats: total members, active members, new this month, latest attendance count
+- Dashboard summary stats: total members, active members, new this month, latest attendance count, recent visitor submissions
 
-### 4.3 Member Self-Service Portal
+### 4.4 Member Self-Service Portal
 
 - Members log in to view and edit their own profile details
 - View personal giving history and download annual giving statements
@@ -433,22 +681,26 @@ erDiagram
 
 ### 5.1 Permissions Matrix
 
-| Permission | Super Admin | Pastor | Member | Public Visitor |
-|---|:---:|:---:|:---:|:---:|
-| View public website | ✅ | ✅ | ✅ | ✅ |
-| Submit prayer request | ✅ | ✅ | ✅ | ✅ |
-| Give online | ✅ | ✅ | ✅ | ✅ |
-| Register for events | ✅ | ✅ | ✅ | Limited |
-| View own profile | ✅ | ✅ | ✅ | ❌ |
-| Edit own profile | ✅ | ✅ | ✅ | ❌ |
-| View all member records | ✅ | ✅ | ❌ | ❌ |
-| Edit member records | ✅ | ✅ | ❌ | ❌ |
-| Manage giving records | ✅ | ✅ | ❌ | ❌ |
-| Publish website content | ✅ | ✅ | ❌ | ❌ |
-| Manage ministries | ✅ | ✅ | ❌ | ❌ |
-| Manage admin users | ✅ | ❌ | ❌ | ❌ |
-| Access system settings | ✅ | ❌ | ❌ | ❌ |
-| Export member data | ✅ | Pastor only | ❌ | ❌ |
+| Permission | Super Admin | Pastor | Member | First Impression | Public Visitor |
+|---|:---:|:---:|:---:|:---:|:---:|
+| View public website | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Submit visitor registration form | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Submit prayer request | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Give online | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Register for events | ✅ | ✅ | ✅ | ✅ | Limited |
+| View own profile | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Edit own profile | ✅ | ✅ | ✅ | ✅ | ❌ |
+| View all member records | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Edit member records | ✅ | ✅ | ❌ | ❌ | ❌ |
+| View visitor submissions | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Convert visitor to member | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Manage giving records | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Publish website content | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Manage ministries | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Manage service schedule | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Manage admin users | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Access system settings | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Export member data | ✅ | Pastor only | ❌ | ❌ | ❌ |
 
 ---
 
@@ -456,35 +708,44 @@ erDiagram
 
 **R** = Responsible (does the work) · **A** = Accountable (owns the outcome) · **C** = Consulted (input required) · **I** = Informed (kept in the loop)
 
-| Activity | Super Admin | Pastor | Member | Developer |
-|---|:---:|:---:|:---:|:---:|
-| **Website & Content** | | | | |
-| Define site content & messaging | C | A/R | I | I |
-| Publish and update page content | R | A | — | I |
-| Upload sermon media | R | A | — | I |
-| Manage events and calendar | R | A | — | I |
-| Approve announcements | C | A/R | — | — |
-| **Member Database** | | | | |
-| Design database schema | C | I | — | A/R |
-| Initial member data migration | A/R | I | — | C |
-| Add / edit member records | A/R | R | — | — |
-| Deactivate member records | A | R | — | — |
-| Export member data | A/R | R | — | — |
-| **Giving Records** | | | | |
-| Enter tithe/offering records | A/R | I | — | — |
-| Review giving reports | C | A/R | — | — |
-| **Attendance Logs** | | | | |
-| Record service headcount | A/R | I | — | — |
-| Review attendance trends | C | A/R | — | — |
-| **System & Infrastructure** | | | | |
-| Server setup & Docker config | C | I | — | A/R |
-| Cloudflare Tunnel configuration | C | I | — | A/R |
-| Database backups & monitoring | A/R | I | — | C |
-| Security patches & updates | A/R | I | — | C |
-| **User Accounts** | | | | |
-| Create and manage admin accounts | A/R | I | — | — |
-| Reset member passwords | A/R | — | — | — |
-| Members manage own profile | I | — | A/R | — |
+| Activity | Super Admin | Pastor | Member | First Impression | Developer |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **Website & Content** | | | | | |
+| Define site content & messaging | C | A/R | I | — | I |
+| Publish and update page content | R | A | — | — | I |
+| Upload sermon media | R | A | — | — | I |
+| Manage events and calendar | R | A | — | — | I |
+| Approve announcements | C | A/R | — | — | — |
+| **Visitor Management** | | | | | |
+| Capture visitor form at service | I | I | — | A/R | — |
+| Review visitor submissions | A/R | R | — | — | — |
+| Follow up with visitors | C | A/R | — | R | — |
+| Convert visitor to member | A/R | R | — | — | — |
+| **Member Database** | | | | | |
+| Design database schema | C | I | — | — | A/R |
+| Initial member data migration | A/R | I | — | — | C |
+| Add / edit member records | A/R | R | — | — | — |
+| Deactivate member records | A | R | — | — | — |
+| Export member data | A/R | R | — | — | — |
+| **Giving Records** | | | | | |
+| Enter tithe/offering records | A/R | I | — | — | — |
+| Review giving reports | C | A/R | — | — | — |
+| **Attendance Logs** | | | | | |
+| Record service headcount | A/R | I | — | — | — |
+| Review attendance trends | C | A/R | — | — | — |
+| **Service Schedule** | | | | | |
+| Create / edit service templates | A/R | R | — | — | — |
+| Assign preachers and leaders | C | A/R | — | — | — |
+| **System & Infrastructure** | | | | | |
+| Server setup & Docker config | C | I | — | — | A/R |
+| Cloudflare Tunnel configuration | C | I | — | — | A/R |
+| n8n webhook configuration | C | I | — | — | A/R |
+| Database backups & monitoring | A/R | I | — | — | C |
+| Security patches & updates | A/R | I | — | — | C |
+| **User Accounts** | | | | | |
+| Create and manage admin accounts | A/R | I | — | — | — |
+| Reset member passwords | A/R | — | — | — | — |
+| Members manage own profile | I | — | A/R | — | — |
 
 ---
 
@@ -509,12 +770,14 @@ flowchart TD
         E --> F[(PostgreSQL 16\nDocker Container)]
         E --> G[(MinIO\nFile Storage)]
         E --> H[Postal\nEmail Server]
+        E --> N[n8n\nWorkflow Automation]
         I[Uptime Kuma\nMonitoring] -.->|health checks| E
         I -.->|health checks| F
+        I -.->|health checks| N
     end
 
     subgraph EXT["🌐 External Services"]
-        E --> J[PayStack / Stripe\nPayment Gateway]
+        E --> J[PayMongo / Stripe\nPayment Gateway]
         E --> K[Facebook\nLive Embeds]
     end
 
@@ -544,7 +807,8 @@ All tools are free and open-source. The only external cost is the payment gatewa
 | Auth | NextAuth.js (Auth.js v5) | ISC | Role-based login, session management |
 | File Storage | MinIO (self-hosted) | AGPL | Sermon media, profile photos — S3-compatible |
 | Email Service | Postal (self-hosted) | MIT | Transactional emails, receipts, notifications |
-| Payment Gateway | PayStack or Stripe | Per-transaction | Online giving; no monthly subscription |
+| Workflow Automation | n8n (self-hosted) | Fair-code | Visitor form webhook, follow-up automation |
+| Payment Gateway | PayMongo or Stripe | Per-transaction | Online giving (PayMongo supports GCash, Maya, GrabPay & cards locally); no monthly subscription |
 | Reverse Proxy | Nginx (self-hosted) | BSD | Routes traffic from Cloudflare Tunnel to app |
 | Tunnelling | Cloudflare Tunnel | Free | Secure public domain without exposing server IP |
 | DNS & CDN | Cloudflare (free plan) | Free | DNS management, SSL, caching, DDoS protection |
@@ -557,6 +821,8 @@ All tools are free and open-source. The only external cost is the payment gatewa
 - **Performance:** Page load time under 3 seconds on 4G mobile
 - **Accessibility:** WCAG 2.1 AA compliant
 - **Security:** HTTPS via Cloudflare, PII encrypted at rest, OWASP Top 10 mitigations applied
+- **Data Privacy:** Compliant with the Philippine **Data Privacy Act of 2012 (RA 10173)** and its IRR — lawful basis/consent capture for personal data, data-subject rights (access, correction, erasure), breach-notification readiness, and a documented retention policy for member and visitor records
+- **Localisation:** Default currency **PHP (₱)**; timestamps stored in UTC (`TIMESTAMPTZ`) and displayed in **Asia/Manila (UTC+8)**; Philippine phone-number formats supported
 - **SEO:** Metadata, Open Graph tags, sitemap.xml, and robots.txt configured
 - **Scalability:** Architecture supports up to 5,000 active member records without redesign
 - **Availability:** Dependent on local server uptime; Uptime Kuma configured for downtime alerts
@@ -573,10 +839,13 @@ Features are prioritised using the MoSCoW framework across three development pha
 | Landing Page | Homepage with hero, activity feed, and quick links | 🔴 High | Phase 1 |
 | Mission & Vision | Church identity and leadership profile page | 🔴 High | Phase 1 |
 | Service Schedule | Weekly and special service listing | 🔴 High | Phase 1 |
+| Service Schedule Management | Admin CRUD for service templates with full role assignment | 🔴 High | Phase 1 |
+| Activities Management | Admin CRUD for church activities and events | 🟡 Medium | Phase 2 |
 | Contact & Location | Map, enquiry form, social links | 🔴 High | Phase 1 |
 | Member Database | Core member record creation and management | 🔴 High | Phase 1 |
 | Admin Dashboard | Member directory, search, and edit | 🔴 High | Phase 1 |
 | Auth & Roles | Login, session, and role-based access | 🔴 High | Phase 1 |
+| Visitor Registration Form | QR-accessible form with n8n webhook submission | 🔴 High | Phase 1 |
 | New Visitor Page | Welcome page for first-time guests | 🟡 Medium | Phase 2 |
 | Events & Calendar | Event listings and registration | 🟡 Medium | Phase 2 |
 | Prayer Requests | Submission form and admin inbox | 🟡 Medium | Phase 2 |
@@ -584,9 +853,11 @@ Features are prioritised using the MoSCoW framework across three development pha
 | Online Giving | Donation form with payment gateway | 🟡 Medium | Phase 2 |
 | Member Portal | Self-service profile and giving history | 🟡 Medium | Phase 2 |
 | Giving Records Page | Manual admin entry of tithe/offering per service | 🟡 Medium | Phase 2 |
+| Visitor Admin Inbox | View, follow up, and convert visitors to members | 🟡 Medium | Phase 2 |
 | Giving Reports | Annual statements and export to CSV | 🟢 Low | Phase 3 |
 | Podcast RSS Feed | Auto-generated feed from sermon library | 🟢 Low | Phase 3 |
 | Attendance Tracking | Per-service headcount and visitor count logging | 🟢 Low | Phase 3 |
+| Service Calendar (Full) | Calendar view driven by services and activities tables | 🟢 Low | Phase 3 |
 | Email Campaigns | Bulk member announcements | 🟢 Low | Phase 3 |
 
 ---
@@ -595,9 +866,9 @@ Features are prioritised using the MoSCoW framework across three development pha
 
 | Phase | Duration | Deliverables | Key Activities |
 |---|---|---|---|
-| Phase 1 — Foundation | Weeks 1–4 | Core website + member DB | Server setup, Docker config, Cloudflare Tunnel, Next.js project, DB schema + migrations, landing page, service schedule, mission page, contact page, member admin CRUD, auth |
-| Phase 2 — Engagement | Weeks 5–9 | Full feature set live | Events calendar, sermon library, MinIO file storage, prayer requests, online giving integration, new visitor page, member self-service portal, giving records admin page |
-| Phase 3 — Refinement | Weeks 10–12 | Polished production build | Attendance tracking, giving reports, Postal email setup, performance optimisation, accessibility audit, backup automation, UAT, go-live |
+| Phase 1 — Foundation | Weeks 1–4 | Core website + member DB + visitor form | Server setup, Docker config, Cloudflare Tunnel, n8n setup, Next.js project, DB schema + migrations, landing page, service schedule, mission page, contact page, member admin CRUD, auth, visitor registration form + webhook |
+| Phase 2 — Engagement | Weeks 5–9 | Full feature set live | Events calendar, sermon library, MinIO file storage, prayer requests, online giving integration, new visitor page, member self-service portal, giving records admin page, visitor admin inbox |
+| Phase 3 — Refinement | Weeks 10–12 | Polished production build | Attendance tracking, giving reports, full service calendar, Postal email setup, performance optimisation, accessibility audit, backup automation, UAT, go-live |
 
 ---
 
@@ -605,7 +876,7 @@ Features are prioritised using the MoSCoW framework across three development pha
 
 ### 9.1 Open Questions
 
-- What is the preferred payment gateway — PayStack (Africa-based) or Stripe (international)?
+- What is the preferred payment gateway — **PayMongo** (Philippine-local; supports GCash, Maya, GrabPay, and cards) or **Stripe** (international)?
 - Sermon media will be self-hosted via MinIO for recorded content; Facebook Live embed links will be used for live services. ✅ *Resolved*
 - The site will launch in English only. Multilingual support is deferred to a future phase. ✅ *Resolved*
 - Initial member data migration will cover approximately **300 member records** provided via spreadsheet. ✅ *Resolved*
@@ -619,9 +890,10 @@ Features are prioritised using the MoSCoW framework across three development pha
 - The local server will remain powered on and connected to the internet at all times
 - A dedicated admin will manage content updates post-launch
 - Member data will be initially provided via spreadsheet for bulk import (~300 records)
-- The development team will handle server setup, Docker deployment, and Cloudflare Tunnel configuration
-- Compliance with local data protection laws (e.g. POPIA or GDPR) is required
+- The development team will handle server setup, Docker deployment, Cloudflare Tunnel, and n8n configuration
+- Compliance with the Philippine **Data Privacy Act of 2012 (RA 10173)** and its IRR, as overseen by the **National Privacy Commission (NPC)**, is required
 - The site will launch in English; multilingual support is out of scope for v1
+- n8n will be self-hosted on the same local server and accessible only internally
 
 ---
 
@@ -635,4 +907,4 @@ Features are prioritised using the MoSCoW framework across three development pha
 
 ---
 
-*Confidential — Internal Use Only | Version 1.2 | June 2026*
+*Confidential — Internal Use Only | Version 1.5 (Philippines) | June 2026 | Versioned via Git history*

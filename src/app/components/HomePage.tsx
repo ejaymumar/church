@@ -31,7 +31,7 @@ const upcomingEvents = [
     title: "Youth Camp 2026",
     theme: "Rooted & Built Up",
     verse: "Colossians 2:7",
-    location: "Camp Canaan, Tagaytay",
+    location: "Camp Canaan, Balamban, Cebu",
     time: "All day",
   },
   {
@@ -39,7 +39,7 @@ const upcomingEvents = [
     title: "Outreach Saturday",
     theme: "Love in Action",
     verse: "James 2:17",
-    location: "Payatas, Quezon City",
+    location: "Inayagan, Minglanilla",
     time: "8:00 AM",
   },
 ];
@@ -96,7 +96,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
           <div>
             <div className="inline-flex items-center gap-2 text-accent text-sm tracking-widest uppercase mb-6">
               <div className="w-8 h-px bg-accent" />
-              Quezon City, Philippines
+              Minglanilla, Cebu, Philippines
             </div>
             <h1
               className="text-white leading-none mb-6"
@@ -145,7 +145,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
               <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-xs text-white/50">
                 <div className="flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5" />
-                  14 Katipunan Ave., Quezon City
+                  National Highway, Minglanilla, Cebu
                 </div>
                 <button
                   onClick={() => onNavigate("contact")}
@@ -363,8 +363,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
               Evangelical Community Church
             </div>
             <p className="text-sm leading-relaxed">
-              14 Katipunan Avenue, Quezon City<br />
-              Metro Manila, Philippines 1108
+              National Highway, Poblacion Ward II<br />
+              Minglanilla, Cebu, Philippines 6046
             </p>
             <p className="text-sm mt-3">
               +63 2 8234 5678<br />

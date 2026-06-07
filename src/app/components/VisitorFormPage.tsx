@@ -9,6 +9,7 @@ interface VisitorFormData {
   email_address: string;
   home_area: string;
   heard_via: string;
+  visit_date: string;
   visit_type: "First Time" | "Returning";
   wants_contact: boolean;
 }
@@ -16,6 +17,9 @@ interface VisitorFormData {
 export function VisitorFormPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Earliest selectable visit date — today (local) onwards
+  const today = new Date().toISOString().split("T")[0];
 
   const {
     register,
@@ -133,6 +137,24 @@ export function VisitorFormPage() {
             )}
           </div>
 
+          {/* Date of Visit */}
+          <div>
+            <label className="block text-sm font-medium mb-1.5">
+              Date of Visit <span className="text-accent">*</span>
+            </label>
+            <input
+              {...register("visit_date", { required: "Please choose a date for your visit" })}
+              type="date"
+              min={today}
+              className={`w-full px-4 py-2.5 rounded bg-input-background border text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 transition-all ${
+                errors.visit_date ? "border-destructive" : "border-border"
+              }`}
+            />
+            {errors.visit_date && (
+              <p className="text-xs text-destructive mt-1">{errors.visit_date.message}</p>
+            )}
+          </div>
+
           {/* Visit type */}
           <div>
             <label className="block text-sm font-medium mb-2">
@@ -183,7 +205,7 @@ export function VisitorFormPage() {
             <input
               {...register("home_area")}
               type="text"
-              placeholder="e.g. Quezon City, Pasig, Makati"
+              placeholder="e.g. Minglanilla, Talisay, Cebu City"
               className="w-full px-4 py-2.5 rounded bg-input-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 transition-all"
             />
           </div>

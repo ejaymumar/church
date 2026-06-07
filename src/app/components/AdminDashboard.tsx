@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   Users, UserPlus, Calendar, Heart, Search, Filter,
   ChevronRight, TrendingUp, Bell, BookOpen, ArrowUpRight,
-  MoreHorizontal, CheckCircle, Clock, ChevronLeft, Menu
+  MoreHorizontal, CheckCircle, Clock, ChevronLeft, Menu, Home
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 
@@ -14,11 +14,11 @@ const stats = [
 ];
 
 const recentVisitors = [
-  { name: "Maria Santos", phone: "+63 917 456 7890", area: "Quezon City", type: "First Time", date: "1 Jun", wantsContact: true, status: "pending" },
-  { name: "Juan dela Cruz", phone: "+63 918 123 4567", area: "Pasig", type: "Returning", date: "1 Jun", wantsContact: false, status: "contacted" },
-  { name: "Ana Reyes", phone: "+63 919 987 6543", area: "Marikina", type: "First Time", date: "25 May", wantsContact: true, status: "converted" },
-  { name: "Carlo Bautista", phone: "+63 920 321 0987", area: "Makati", type: "First Time", date: "25 May", wantsContact: true, status: "pending" },
-  { name: "Liza Mendoza", phone: "+63 921 654 3210", area: "Mandaluyong", type: "Returning", date: "18 May", wantsContact: false, status: "contacted" },
+  { name: "Maria Santos", phone: "+63 917 456 7890", area: "Minglanilla", type: "First Time", date: "1 Jun", wantsContact: true, status: "pending" },
+  { name: "Juan dela Cruz", phone: "+63 918 123 4567", area: "Talisay City", type: "Returning", date: "1 Jun", wantsContact: false, status: "contacted" },
+  { name: "Ana Reyes", phone: "+63 919 987 6543", area: "Naga City", type: "First Time", date: "25 May", wantsContact: true, status: "converted" },
+  { name: "Carlo Bautista", phone: "+63 920 321 0987", area: "Cebu City", type: "First Time", date: "25 May", wantsContact: true, status: "pending" },
+  { name: "Liza Mendoza", phone: "+63 921 654 3210", area: "San Fernando", type: "Returning", date: "18 May", wantsContact: false, status: "contacted" },
 ];
 
 const members = [
@@ -79,7 +79,11 @@ const sidebarItems: { id: AdminSection; label: string; icon: React.ElementType }
   { id: "prayer", label: "Prayer Requests", icon: BookOpen },
 ];
 
-export function AdminDashboard() {
+interface AdminDashboardProps {
+  onNavigate: (page: string) => void;
+}
+
+export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
   const [section, setSection] = useState<AdminSection>("overview");
   const [memberSearch, setMemberSearch] = useState("");
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -138,6 +142,20 @@ export function AdminDashboard() {
             </button>
           ))}
         </nav>
+
+        {/* Back to public website */}
+        <div className="px-2 py-2 border-t border-sidebar-border">
+          <button
+            onClick={() => onNavigate("home")}
+            title={!sidebarExpanded ? "Back to Website" : undefined}
+            className={`w-full flex items-center gap-2.5 rounded text-sm transition-colors text-left text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-white/5 ${
+              sidebarExpanded ? "px-3 py-2" : "px-0 py-2 justify-center"
+            }`}
+          >
+            <Home className="w-4 h-4 flex-shrink-0" />
+            {sidebarExpanded && <span className="truncate">Back to Website</span>}
+          </button>
+        </div>
 
         {sidebarExpanded && (
           <div className="px-5 py-4 border-t border-sidebar-border text-xs text-sidebar-foreground/40 truncate">
