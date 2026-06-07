@@ -1,0 +1,23 @@
+services:
+  church-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: client-dev
+    image: ecc-church-web:0.1
+    restart: always
+    ports:
+      - "5173:5173"
+    # The prototype has no runtime env vars yet. Uncomment to pass a .env
+    # (e.g. the future n8n webhook URL from the PRD).
+    # env_file:
+    #   - .env
+    develop:
+      watch:
+        # Live-sync source changes into the container for Vite HMR.
+        - action: sync
+          path: ./src
+          target: /usr/local/app/src
+        # Rebuild the image when dependencies change.
+        - action: rebuild
+          path: ./package.json

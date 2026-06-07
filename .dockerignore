@@ -1,0 +1,12 @@
+node_modules
+dist
+.git
+.gitignore
+*.md
+docs
+guidelines
+.claude
+Dockerfile
+compose.yaml
+.dockerignore
+npm-debug.log*

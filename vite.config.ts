@@ -31,6 +31,20 @@ export default defineConfig({
     },
   },
 
+  server: {
+    // host: true binds 0.0.0.0 so the dev server is reachable from outside the
+    // container; strictPort fails fast instead of silently picking another port.
+    host: true,
+    port: 5173,
+    strictPort: true,
+    // Hostnames allowed to reach the dev server (e.g. when proxied behind a domain).
+    allowedHosts: ['.ejaymumar.org'],
+  },
+
+  build: {
+    sourcemap: true,
+  },
+
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
   assetsInclude: ['**/*.svg', '**/*.csv'],
 })
