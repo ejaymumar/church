@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { Play, Search, BookOpen, Mic, Calendar } from "lucide-react";
 import { motion, MotionConfig } from "motion/react";

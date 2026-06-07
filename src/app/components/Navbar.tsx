@@ -1,10 +1,8 @@
+"use client";
+
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-
-interface NavbarProps {
-  activePage: string;
-  onNavigate: (page: string) => void;
-}
+import { usePathname, useRouter } from "next/navigation";
 
 const navLinks = [
   { id: "home", label: "Home" },
@@ -17,11 +15,19 @@ const navLinks = [
   { id: "contact", label: "Contact" },
 ];
 
-export function Navbar({ activePage, onNavigate }: NavbarProps) {
+/** Map a nav id to its App Router href ("home" -> "/", otherwise "/<id>"). */
+const hrefFor = (id: string) => (id === "home" ? "/" : `/${id}`);
+
+export function Navbar() {
+  const router = useRouter();
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Derive the active nav id from the current path ("/" -> "home").
+  const activePage = pathname === "/" ? "home" : pathname.replace(/^\//, "");
+
   const handleNav = (id: string) => {
-    onNavigate(id);
+    router.push(hrefFor(id));
     setMobileOpen(false);
   };
 

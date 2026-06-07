@@ -1,11 +1,10 @@
+"use client";
+
 import { Calendar, Clock, MapPin, Play, Heart, BookOpen, ChevronRight, Bell, Users, Music } from "lucide-react";
 import { motion, MotionConfig } from "motion/react";
+import { useRouter } from "next/navigation";
 import { Reveal, staggerContainer, staggerItem } from "./motion/Reveal";
 import { CountUp } from "./motion/CountUp";
-
-interface HomePageProps {
-  onNavigate: (page: string) => void;
-}
 
 const announcements = [
   "Sunday Service is at 9:00 AM & 11:00 AM — All are welcome!",
@@ -81,7 +80,11 @@ const stats = [
   { icon: Heart, label: "Years of Grace", value: 28, suffix: "" },
 ];
 
-export function HomePage({ onNavigate }: HomePageProps) {
+export function HomePage() {
+  const router = useRouter();
+  const onNavigate = (page: string) =>
+    router.push(page === "home" ? "/" : `/${page}`);
+
   return (
     <MotionConfig reducedMotion="user">
       <div className="min-h-screen">

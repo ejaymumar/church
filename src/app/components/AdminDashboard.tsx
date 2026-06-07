@@ -1,9 +1,12 @@
+"use client";
+
 import { useState } from "react";
 import {
   Users, UserPlus, Calendar, Heart, Search, Filter,
   ChevronRight, TrendingUp, Bell, BookOpen, ArrowUpRight,
   MoreHorizontal, CheckCircle, Clock, ChevronLeft, Menu, Home
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 
 const stats = [
@@ -79,11 +82,11 @@ const sidebarItems: { id: AdminSection; label: string; icon: React.ElementType }
   { id: "prayer", label: "Prayer Requests", icon: BookOpen },
 ];
 
-interface AdminDashboardProps {
-  onNavigate: (page: string) => void;
-}
+export function AdminDashboard() {
+  const router = useRouter();
+  const onNavigate = (page: string) =>
+    router.push(page === "home" ? "/" : `/${page}`);
 
-export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
   const [section, setSection] = useState<AdminSection>("overview");
   const [memberSearch, setMemberSearch] = useState("");
   const [sidebarExpanded, setSidebarExpanded] = useState(true);

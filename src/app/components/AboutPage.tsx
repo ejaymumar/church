@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Heart, Target, Eye, Users, Award, ShieldCheck, Sprout,
   Sunrise, Church, GraduationCap, HandCoins, Megaphone,

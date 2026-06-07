@@ -1,10 +1,9 @@
+"use client";
+
 import { Calendar, MapPin, Clock, BookOpen, ChevronRight } from "lucide-react";
 import { motion, MotionConfig } from "motion/react";
+import { useRouter } from "next/navigation";
 import { Reveal } from "./motion/Reveal";
-
-interface EventsPageProps {
-  onNavigate: (page: string) => void;
-}
 
 const events = [
   {
@@ -61,7 +60,11 @@ const events = [
   },
 ];
 
-export function EventsPage({ onNavigate }: EventsPageProps) {
+export function EventsPage() {
+  const router = useRouter();
+  const onNavigate = (page: string) =>
+    router.push(page === "home" ? "/" : `/${page}`);
+
   return (
     <MotionConfig reducedMotion="user">
       <div className="min-h-screen">

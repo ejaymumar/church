@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { MapPin, Phone, Mail, Clock, Facebook, Instagram, Youtube, CheckCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
