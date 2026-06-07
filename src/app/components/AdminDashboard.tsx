@@ -232,7 +232,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                       <Tooltip contentStyle={{ fontSize: 12, border: "1px solid var(--border)", borderRadius: 4 }} formatter={(v: number) => `₱ ${v.toLocaleString()}`} />
                       <Bar dataKey="tithe" fill="var(--primary)" radius={[2, 2, 0, 0]} name="Tithe" />
                       <Bar dataKey="offering" fill="var(--accent)" radius={[2, 2, 0, 0]} name="Offering" />
-                      <Bar dataKey="building" fill="#4a7a9b" radius={[2, 2, 0, 0]} name="Building Fund" />
+                      <Bar dataKey="building" fill="var(--pop)" radius={[2, 2, 0, 0]} name="Building Fund" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -419,7 +419,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                     <Tooltip contentStyle={{ fontSize: 12, border: "1px solid var(--border)", borderRadius: 4 }} formatter={(v: number) => `₱ ${v.toLocaleString()}`} />
                     <Bar dataKey="tithe" fill="var(--primary)" radius={[2, 2, 0, 0]} name="Tithe" />
                     <Bar dataKey="offering" fill="var(--accent)" radius={[2, 2, 0, 0]} name="Offering" />
-                    <Bar dataKey="building" fill="#4a7a9b" radius={[2, 2, 0, 0]} name="Building Fund" />
+                    <Bar dataKey="building" fill="var(--pop)" radius={[2, 2, 0, 0]} name="Building Fund" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X, Cross } from "lucide-react";
+import { Menu, X } from "lucide-react";
 
 interface NavbarProps {
   activePage: string;
@@ -33,9 +33,11 @@ export function Navbar({ activePage, onNavigate }: NavbarProps) {
           onClick={() => handleNav("home")}
           className="flex items-center gap-2.5 group"
         >
-          <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center">
-            <Cross className="w-4 h-4 text-white" />
-          </div>
+          <img
+            src="/ecc_logo.png"
+            alt="Evangelical Community Church logo"
+            className="w-9 h-9 object-contain"
+          />
           <div className="text-left">
             <div
               className="text-white leading-none tracking-wide"
@@ -68,7 +70,7 @@ export function Navbar({ activePage, onNavigate }: NavbarProps) {
         <div className="hidden lg:flex items-center gap-3">
           <button
             onClick={() => handleNav("visitor")}
-            className="px-4 py-1.5 text-sm border border-accent/60 text-accent hover:bg-accent hover:text-white rounded transition-colors"
+            className="px-4 py-1.5 text-sm border border-pop/60 text-pop hover:bg-pop hover:text-white rounded transition-colors"
           >
             Plan Your Visit
           </button>
@@ -108,7 +110,7 @@ export function Navbar({ activePage, onNavigate }: NavbarProps) {
           <div className="mt-3 pt-3 border-t border-white/10 flex flex-col gap-2">
             <button
               onClick={() => handleNav("visitor")}
-              className="px-4 py-2 text-sm border border-accent/60 text-accent rounded"
+              className="px-4 py-2 text-sm border border-pop/60 text-pop rounded"
             >
               Plan Your Visit
             </button>

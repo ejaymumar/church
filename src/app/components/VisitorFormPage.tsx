@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { CheckCircle, Cross } from "lucide-react";
+import { motion, MotionConfig } from "motion/react";
+import { Reveal } from "./motion/Reveal";
 
 interface VisitorFormData {
   full_name: string;
@@ -41,8 +43,9 @@ export function VisitorFormPage() {
 
   if (submitted) {
     return (
+      <MotionConfig reducedMotion="user">
       <div className="min-h-screen bg-background flex items-center justify-center px-6">
-        <div className="max-w-md w-full text-center">
+        <Reveal className="max-w-md w-full text-center">
           <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-8 h-8 text-accent" />
           </div>
@@ -73,16 +76,18 @@ export function VisitorFormPage() {
           >
             Submit another response
           </button>
-        </div>
+        </Reveal>
       </div>
+      </MotionConfig>
     );
   }
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-primary py-12">
-        <div className="max-w-lg mx-auto px-6 text-center">
+      <div className="relative overflow-hidden mesh-navy grain cross-pattern py-12">
+        <Reveal className="relative max-w-lg mx-auto px-6 text-center">
           <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-4">
             <Cross className="w-5 h-5 text-accent" />
           </div>
@@ -95,11 +100,12 @@ export function VisitorFormPage() {
           <p className="text-white/60 text-sm">
             We're so glad you're here. Please take a moment to register — it helps us get to know you.
           </p>
-        </div>
+        </Reveal>
       </div>
 
       {/* Form */}
       <div className="max-w-lg mx-auto px-6 py-10">
+        <Reveal>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Full Name */}
           <div>
@@ -245,15 +251,19 @@ export function VisitorFormPage() {
           </div>
 
           {/* Submit */}
-          <button
+          <motion.button
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.97 }}
             type="submit"
             disabled={submitting}
-            className="w-full py-3 bg-accent text-white hover:bg-accent/90 rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed text-sm font-medium"
+            className="w-full py-3 bg-pop text-white hover:bg-pop/90 rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed text-sm font-medium shadow-lg shadow-pop/20"
           >
             {submitting ? "Submitting…" : "Submit Registration"}
-          </button>
+          </motion.button>
         </form>
+        </Reveal>
       </div>
     </div>
+    </MotionConfig>
   );
 }

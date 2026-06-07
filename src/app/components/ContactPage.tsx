@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { MapPin, Phone, Mail, Clock, Facebook, Instagram, Youtube, CheckCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { motion, MotionConfig } from "motion/react";
+import { Reveal } from "./motion/Reveal";
 
 const departments = [
   { name: "General Enquiries", contact: "info@ecc.org.ph", person: "Admin Office" },
@@ -20,21 +22,26 @@ export function ContactPage() {
   };
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="min-h-screen">
-      <section className="bg-primary py-16">
-        <div className="max-w-2xl mx-auto px-6 text-center">
+      <section className="relative overflow-hidden mesh-navy grain cross-pattern py-16">
+        <Reveal className="relative max-w-2xl mx-auto px-6 text-center">
           <div className="text-accent text-xs uppercase tracking-widest mb-3">Get in Touch</div>
           <h1 className="text-white" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 600 }}>
             Contact Us
           </h1>
           <p className="text-white/60 mt-3">We'd love to hear from you. Reach out and we'll get back to you within 24 hours.</p>
-        </div>
+        </Reveal>
       </section>
 
       <section className="max-w-6xl mx-auto px-6 py-12 grid lg:grid-cols-3 gap-10">
         {/* Contact info */}
-        <div className="space-y-6">
-          <div className="bg-card border border-border rounded-lg p-5">
+        <Reveal className="space-y-6">
+          <motion.div
+            whileHover={{ y: -4 }}
+            transition={{ type: "spring", stiffness: 300, damping: 22 }}
+            className="bg-card border border-border rounded-lg p-5 hover:shadow-lg hover:border-accent/40 transition-shadow"
+          >
             <div className="text-accent text-xs uppercase tracking-widest mb-4">Location</div>
             <div className="flex items-start gap-3">
               <MapPin className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
@@ -44,8 +51,12 @@ export function ContactPage() {
                 Philippines 6046
               </div>
             </div>
-          </div>
-          <div className="bg-card border border-border rounded-lg p-5 space-y-3">
+          </motion.div>
+          <motion.div
+            whileHover={{ y: -4 }}
+            transition={{ type: "spring", stiffness: 300, damping: 22 }}
+            className="bg-card border border-border rounded-lg p-5 space-y-3 hover:shadow-lg hover:border-accent/40 transition-shadow"
+          >
             <div className="text-accent text-xs uppercase tracking-widest mb-1">Contact Details</div>
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <Phone className="w-4 h-4 text-accent flex-shrink-0" />
@@ -55,16 +66,24 @@ export function ContactPage() {
               <Mail className="w-4 h-4 text-accent flex-shrink-0" />
               info@ecc.org.ph
             </div>
-          </div>
-          <div className="bg-card border border-border rounded-lg p-5">
+          </motion.div>
+          <motion.div
+            whileHover={{ y: -4 }}
+            transition={{ type: "spring", stiffness: 300, damping: 22 }}
+            className="bg-card border border-border rounded-lg p-5 hover:shadow-lg hover:border-accent/40 transition-shadow"
+          >
             <div className="text-accent text-xs uppercase tracking-widest mb-3">Office Hours</div>
             <div className="space-y-1.5 text-sm text-muted-foreground">
               <div className="flex justify-between"><span>Monday – Friday</span><span>9:00 AM – 4:00 PM</span></div>
               <div className="flex justify-between"><span>Saturday</span><span>Closed</span></div>
               <div className="flex justify-between"><span>Sunday</span><span>8:00 AM – 1:00 PM</span></div>
             </div>
-          </div>
-          <div className="bg-card border border-border rounded-lg p-5">
+          </motion.div>
+          <motion.div
+            whileHover={{ y: -4 }}
+            transition={{ type: "spring", stiffness: 300, damping: 22 }}
+            className="bg-card border border-border rounded-lg p-5 hover:shadow-lg hover:border-accent/40 transition-shadow"
+          >
             <div className="text-accent text-xs uppercase tracking-widest mb-3">Follow Us</div>
             <div className="flex gap-3">
               {[
@@ -77,11 +96,11 @@ export function ContactPage() {
                 </button>
               ))}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </Reveal>
 
         {/* Enquiry form */}
-        <div className="lg:col-span-2">
+        <Reveal className="lg:col-span-2">
           <div className="text-accent text-xs uppercase tracking-widest mb-2 flex items-center gap-2">
             <div className="w-5 h-px bg-accent" /> Send a Message
           </div>
@@ -118,9 +137,14 @@ export function ContactPage() {
                 <label className="block text-sm font-medium mb-1.5">Message <span className="text-accent">*</span></label>
                 <textarea {...register("message", { required: true })} rows={5} placeholder="How can we help you?" className={`w-full px-4 py-2.5 text-sm bg-input-background border rounded focus:outline-none focus:ring-2 focus:ring-accent/40 resize-none ${errors.message ? "border-destructive" : "border-border"}`} />
               </div>
-              <button type="submit" className="px-8 py-3 bg-primary text-white hover:bg-primary/90 rounded transition-colors text-sm">
+              <motion.button
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                type="submit"
+                className="px-8 py-3 bg-pop text-white hover:bg-pop/90 rounded transition-colors text-sm shadow-lg shadow-pop/20"
+              >
                 Send Message
-              </button>
+              </motion.button>
             </form>
           )}
 
@@ -141,7 +165,7 @@ export function ContactPage() {
               ))}
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* Map — Minglanilla, Cebu */}
@@ -156,5 +180,6 @@ export function ContactPage() {
         />
       </div>
     </div>
+    </MotionConfig>
   );
 }

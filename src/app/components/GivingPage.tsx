@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Heart, Shield, RefreshCw, CheckCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { motion, MotionConfig } from "motion/react";
+import { Reveal } from "./motion/Reveal";
 
 interface GivingFormData {
   giving_type: string;
@@ -26,8 +28,9 @@ export function GivingPage() {
 
   if (submitted) {
     return (
+      <MotionConfig reducedMotion="user">
       <div className="min-h-screen flex items-center justify-center px-6">
-        <div className="max-w-md text-center">
+        <Reveal className="max-w-md text-center">
           <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-8 h-8 text-accent" />
           </div>
@@ -41,15 +44,17 @@ export function GivingPage() {
           <button onClick={() => setSubmitted(false)} className="mt-4 text-sm text-accent hover:underline">
             Make another donation
           </button>
-        </div>
+        </Reveal>
       </div>
+      </MotionConfig>
     );
   }
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="min-h-screen">
-      <section className="bg-primary py-16">
-        <div className="max-w-2xl mx-auto px-6 text-center">
+      <section className="relative overflow-hidden mesh-navy grain cross-pattern py-16">
+        <Reveal className="relative max-w-2xl mx-auto px-6 text-center">
           <div className="text-accent text-xs uppercase tracking-widest mb-3 flex items-center justify-center gap-2">
             <Heart className="w-3.5 h-3.5" /> Give Online
           </div>
@@ -59,10 +64,11 @@ export function GivingPage() {
           <p className="text-white/60 mt-3 max-w-md mx-auto">
             Your generosity makes it possible for us to worship, serve, and reach our community. Every gift matters.
           </p>
-        </div>
+        </Reveal>
       </section>
 
       <section className="max-w-lg mx-auto px-6 py-12">
+        <Reveal>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Giving type */}
           <div>
@@ -157,15 +163,19 @@ export function GivingPage() {
             </div>
           </div>
 
-          <button
+          <motion.button
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.97 }}
             type="submit"
-            className="w-full py-3 bg-accent text-white hover:bg-accent/90 rounded transition-colors text-sm font-medium flex items-center justify-center gap-2"
+            className="w-full py-3 bg-pop text-white hover:bg-pop/90 rounded transition-colors text-sm font-medium flex items-center justify-center gap-2 shadow-lg shadow-pop/20"
           >
             <Heart className="w-4 h-4" />
             Give {customAmount ? `₱ ${parseInt(customAmount || "0").toLocaleString()}` : "Now"}
-          </button>
+          </motion.button>
         </form>
+        </Reveal>
       </section>
     </div>
+    </MotionConfig>
   );
 }

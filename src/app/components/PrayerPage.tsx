@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { CheckCircle, BookOpen } from "lucide-react";
+import { motion, MotionConfig } from "motion/react";
+import { Reveal } from "./motion/Reveal";
 
 interface PrayerFormData {
   name: string;
@@ -27,20 +29,21 @@ export function PrayerPage() {
   };
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="min-h-screen">
-      <section className="bg-primary py-16">
-        <div className="max-w-2xl mx-auto px-6 text-center">
+      <section className="relative overflow-hidden mesh-navy grain cross-pattern py-16">
+        <Reveal className="relative max-w-2xl mx-auto px-6 text-center">
           <div className="text-accent text-xs uppercase tracking-widest mb-3">Prayer</div>
           <h1 className="text-white" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 600 }}>
             We Are Praying With You
           </h1>
           <p className="text-white/60 mt-3">"Do not be anxious about anything, but in every situation, by prayer and petition, present your requests to God." — Philippians 4:6</p>
-        </div>
+        </Reveal>
       </section>
 
       <div className="max-w-5xl mx-auto px-6 py-12 grid lg:grid-cols-2 gap-12">
         {/* Submit form */}
-        <div>
+        <Reveal>
           <div className="text-accent text-xs uppercase tracking-widest mb-2 flex items-center gap-2">
             <div className="w-5 h-px bg-accent" /> Submit a Request
           </div>
@@ -96,15 +99,20 @@ export function PrayerPage() {
                   ))}
                 </div>
               </div>
-              <button type="submit" className="w-full py-3 bg-accent text-white hover:bg-accent/90 rounded transition-colors text-sm">
+              <motion.button
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                type="submit"
+                className="w-full py-3 bg-pop text-white hover:bg-pop/90 rounded transition-colors text-sm shadow-lg shadow-pop/20"
+              >
                 Submit Prayer Request
-              </button>
+              </motion.button>
             </form>
           )}
-        </div>
+        </Reveal>
 
         {/* Community prayers */}
-        <div>
+        <Reveal>
           <div className="text-accent text-xs uppercase tracking-widest mb-2 flex items-center gap-2">
             <div className="w-5 h-px bg-accent" /> Community Wall
           </div>
@@ -113,7 +121,12 @@ export function PrayerPage() {
           </h2>
           <div className="space-y-4">
             {publicPrayers.map((p, i) => (
-              <div key={i} className="bg-card border border-border rounded-lg p-4">
+              <Reveal key={i} delay={i * 0.08}>
+              <motion.div
+                whileHover={{ y: -4 }}
+                transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                className="bg-card border border-border rounded-lg p-4 hover:shadow-lg hover:border-accent/40 transition-shadow"
+              >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs">
@@ -127,11 +140,13 @@ export function PrayerPage() {
                 <button className="mt-2 text-xs text-accent hover:underline flex items-center gap-1">
                   <BookOpen className="w-3 h-3" /> I'm praying for this
                 </button>
-              </div>
+              </motion.div>
+              </Reveal>
             ))}
           </div>
-        </div>
+        </Reveal>
       </div>
     </div>
+    </MotionConfig>
   );
 }
