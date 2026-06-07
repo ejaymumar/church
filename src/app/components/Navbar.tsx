@@ -1,0 +1,126 @@
+import { useState } from "react";
+import { Menu, X, Cross } from "lucide-react";
+
+interface NavbarProps {
+  activePage: string;
+  onNavigate: (page: string) => void;
+}
+
+const navLinks = [
+  { id: "home", label: "Home" },
+  { id: "about", label: "About" },
+  { id: "services", label: "Services" },
+  { id: "events", label: "Events" },
+  { id: "sermons", label: "Sermons" },
+  { id: "giving", label: "Give" },
+  { id: "prayer", label: "Prayer" },
+  { id: "contact", label: "Contact" },
+];
+
+export function Navbar({ activePage, onNavigate }: NavbarProps) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleNav = (id: string) => {
+    onNavigate(id);
+    setMobileOpen(false);
+  };
+
+  return (
+    <header className="sticky top-0 z-50 bg-primary/95 backdrop-blur-sm border-b border-white/10">
+      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
+        {/* Logo */}
+        <button
+          onClick={() => handleNav("home")}
+          className="flex items-center gap-2.5 group"
+        >
+          <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center">
+            <Cross className="w-4 h-4 text-white" />
+          </div>
+          <div className="text-left">
+            <div
+              className="text-white leading-none tracking-wide"
+              style={{ fontFamily: "var(--font-display)", fontSize: "1.1rem", fontWeight: 600 }}
+            >
+              Evangelical Community
+            </div>
+            <div className="text-white/50 text-xs tracking-widest uppercase">Church</div>
+          </div>
+        </button>
+
+        {/* Desktop nav */}
+        <nav className="hidden lg:flex items-center gap-1">
+          {navLinks.map((link) => (
+            <button
+              key={link.id}
+              onClick={() => handleNav(link.id)}
+              className={`px-3 py-1.5 text-sm rounded transition-colors ${
+                activePage === link.id
+                  ? "text-accent bg-white/10"
+                  : "text-white/75 hover:text-white hover:bg-white/8"
+              }`}
+            >
+              {link.label}
+            </button>
+          ))}
+        </nav>
+
+        {/* CTA + admin */}
+        <div className="hidden lg:flex items-center gap-3">
+          <button
+            onClick={() => handleNav("visitor")}
+            className="px-4 py-1.5 text-sm border border-accent/60 text-accent hover:bg-accent hover:text-white rounded transition-colors"
+          >
+            Plan Your Visit
+          </button>
+          <button
+            onClick={() => handleNav("admin")}
+            className="px-4 py-1.5 text-sm bg-white/10 text-white hover:bg-white/20 rounded transition-colors"
+          >
+            Admin
+          </button>
+        </div>
+
+        {/* Mobile toggle */}
+        <button
+          className="lg:hidden text-white p-1"
+          onClick={() => setMobileOpen(!mobileOpen)}
+        >
+          {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+      </div>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="lg:hidden bg-primary border-t border-white/10 px-6 py-4 flex flex-col gap-1">
+          {navLinks.map((link) => (
+            <button
+              key={link.id}
+              onClick={() => handleNav(link.id)}
+              className={`text-left px-3 py-2 text-sm rounded transition-colors ${
+                activePage === link.id
+                  ? "text-accent bg-white/10"
+                  : "text-white/75 hover:text-white"
+              }`}
+            >
+              {link.label}
+            </button>
+          ))}
+          <div className="mt-3 pt-3 border-t border-white/10 flex flex-col gap-2">
+            <button
+              onClick={() => handleNav("visitor")}
+              className="px-4 py-2 text-sm border border-accent/60 text-accent rounded"
+            >
+              Plan Your Visit
+            </button>
+            <button
+              onClick={() => handleNav("admin")}
+              className="px-4 py-2 text-sm bg-white/10 text-white rounded"
+            >
+              Admin Dashboard
+            </button>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+}
