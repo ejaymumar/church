@@ -1,54 +1,57 @@
 ###################################################
 # Stage: base
 #
-# This base stage ensures all other stages are using the same base image
-# and provides common configuration for all stages, such as the working dir.
+# Common base for all stages: pins the Node image and the working directory.
 ###################################################
 FROM node:25-alpine AS base
 WORKDIR /usr/local/app
 
-################## CLIENT STAGES ##################
-
 ###################################################
-# Stage: client-base
+# Stage: deps
 #
-# This stage is used as the base for the client-dev and client-build stages,
-# since there are common steps needed for each.
+# Installs dependencies once so the dev and build stages can share the cached
+# node_modules layer (only re-runs when package.json/lockfile change).
 ###################################################
-FROM base AS client-base
+FROM base AS deps
 # package-lock.json is optional (it is gitignored) — the wildcard copies it when present.
 COPY package.json package-lock.json* ./
 RUN npm install
-# This project's config files (no eslint/tsconfig/public folder here).
-COPY index.html vite.config.ts postcss.config.mjs ./
-COPY src ./src
 
 ###################################################
-# Stage: client-dev
+# Stage: dev
 #
-# This stage is used for development of the client application. It starts the
-# Vite dev server bound to 0.0.0.0 so it is reachable from outside the container.
+# Runs the Next.js dev server with HMR. `-H 0.0.0.0` binds it to all interfaces
+# so it is reachable from outside the container; the port (5174) is set in the
+# package.json "dev" script. Source is bind-synced in via compose `develop.watch`.
 ###################################################
-FROM client-base AS client-dev
-# host/port/strictPort are configured in vite.config.ts.
-EXPOSE 5173
-CMD ["npm", "run", "dev"]
+FROM deps AS dev
+COPY . .
+EXPOSE 5174
+CMD ["npm", "run", "dev", "--", "-H", "0.0.0.0"]
 
 ###################################################
-# Stage: client-build
+# Stage: build
 #
-# Produces the optimised static build in /usr/local/app/dist.
+# Produces the standalone production output (.next/standalone + .next/static),
+# enabled by `output: "standalone"` in next.config.mjs.
 ###################################################
-FROM client-base AS client-build
+FROM deps AS build
+COPY . .
 RUN npm run build
 
 ###################################################
-# Stage: client-prod
+# Stage: prod
 #
-# Serves the static build with nginx. Build/run this stage for production:
-#   docker build --target client-prod -t ecc-church-web:prod .
+# Serves the standalone server. Build/run this stage for production:
+#   docker build --target prod -t ecc-church-web:prod .
 ###################################################
-FROM nginx:alpine AS client-prod
-COPY --from=client-build /usr/local/app/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+FROM base AS prod
+ENV NODE_ENV=production
+ENV PORT=5174
+ENV HOSTNAME=0.0.0.0
+# The standalone output bundles a minimal node_modules + server.js at the root.
+COPY --from=build /usr/local/app/.next/standalone ./
+COPY --from=build /usr/local/app/.next/static ./.next/static
+COPY --from=build /usr/local/app/public ./public
+EXPOSE 5174
+CMD ["node", "server.js"]
